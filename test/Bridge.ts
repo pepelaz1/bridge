@@ -64,7 +64,7 @@ describe("Bridge", function () {
     //---------
 
 
-    const eventFilter = bridge1.filters.SwapInitialized();
+    const eventFilter = bridge1.filters.BridgeOperation();
     const events = await bridge1.queryFilter(eventFilter, "latest");
 
     let signature = await acc1.signMessage(ethers.utils.arrayify(events[0].args["hash"]))
