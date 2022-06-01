@@ -56,7 +56,7 @@ describe("Bridge", function () {
     const chainTo = 1337
     
 
-    let tx = await bridge1.swap(acc1.address, amount, nonce, chainTo)
+    let tx = await bridge1.swap(acc1.address, amount, nonce, chainTo, bridge2.address)
     await tx.wait()
 
     expect(await token.balanceOf(acc1.address)).to.equal(parseEther("9500"))
@@ -70,7 +70,7 @@ describe("Bridge", function () {
     let signature = await acc1.signMessage(ethers.utils.arrayify(events[0].args["hash"]))
 
     tx = await bridge2.redeem(events[0].args["from"], events[0].args["to"], 
-      events[0].args["amount"], events[0].args["chainTo"], events[0].args["nonce"], signature)
+      events[0].args["amount"], events[0].args["chainTo"], events[0].args["target"], events[0].args["nonce"], signature)
     await tx.wait()
 
     expect(await token.balanceOf(acc1.address)).to.equal(parseEther("10000"))
