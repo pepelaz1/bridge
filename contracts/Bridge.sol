@@ -5,34 +5,32 @@ import "./Erc20Token.sol";
 
 contract Bridge {
 
-    mapping(address => mapping(bytes32 => bool)) public processedHashes;
-
     address public immutable owner;
 
     Erc20Token public immutable token;
 
-    event SwapInitialized(address from,
+    mapping(address => mapping(bytes32 => bool)) public processedHashes;
+
+    event SwapInitialized(
+        address from,
         address to,
         uint256 amount, 
         uint256 nonce,
-        uint256 chainId,
-        bytes32 hash,
-        bytes signature);
+        uint256 chainTo,
+        bytes32 hash
+    );
 
     constructor(address _address) {
         token = Erc20Token(_address);
         owner = msg.sender;
     }
 
-    function setTokenOwner(address _address) public {
-        token.setOwner(_address);
-    }
-
-    function swap(address _to, uint256 _amount, uint256 _nonce, uint256 _chainTo, bytes32 _hash, bytes calldata _signature) public {
-        require(processedHashes[msg.sender][_hash] == false, 'already processed');
-        processedHashes[msg.sender][_hash] = true;
+    function swap(address _to, uint256 _amount, uint256 _nonce, uint256 _chainTo) public {
+        bytes32 hash = keccak256(abi.encodePacked(msg.sender, _to, _amount, _nonce, _chainTo));
+        require(processedHashes[msg.sender][hash] == false, 'already processed');
+        processedHashes[msg.sender][hash] = true;
         token.burn(msg.sender, _amount);
-        emit SwapInitialized(msg.sender, _to, _amount, _nonce, _chainTo, _hash, _signature);
+        emit SwapInitialized(msg.sender, _to, _amount, _nonce, _chainTo, hash);
     }
 
     function redeem(address _from, address _to, uint256 _amount, uint256 _chainTo, bytes32 _hash, uint8 _v, bytes32 _r, bytes32 _s) public {
@@ -45,7 +43,7 @@ contract Bridge {
     }
 
     function hashMessage(bytes32 _message) private pure returns(bytes32) {
-        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _message));
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message 1:\n32", _message));
     }
  
 }

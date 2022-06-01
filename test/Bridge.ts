@@ -1,7 +1,9 @@
 import { isCommunityResourcable } from "@ethersproject/providers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { BigNumber } from "ethers";
 const { parseEther } = ethers.utils;
+
 
 
 describe("Bridge", function () {
@@ -31,10 +33,15 @@ describe("Bridge", function () {
     bridge1 = await Bridge1.deploy(token.address)
     await bridge1.deployed()  
 
+    token.setMiner(bridge1.address);
+    token.setBurner(bridge1.address);
+
     const Bridge2 = await ethers.getContractFactory('Bridge', acc1)
     bridge2 = await Bridge2.deploy(token.address)
     await bridge2.deployed() 
 
+    token.setMiner(bridge2.address);
+    token.setBurner(bridge2.address);
    
   })
 
@@ -47,28 +54,25 @@ describe("Bridge", function () {
     const nonce = 1
     const amount = parseEther('500')
     const chainTo = 1337
+    
 
-    await token.setOwner(bridge1.address)
-
-    let hash = ethers.utils.solidityKeccak256(
-      ["address", "address", "uint256", "uint256","uint256"],
-      [acc1.address, acc1.address, amount, nonce, chainTo]
-    )
-
-    let signature = await acc1.signMessage(ethers.utils.arrayify(hash))
-
-    let tx = await bridge1.swap(acc1.address, amount, nonce, chainTo, hash, signature)
+    let tx = await bridge1.swap(acc1.address, amount, nonce, chainTo)
     await tx.wait()
 
     expect(await token.balanceOf(acc1.address)).to.equal(parseEther("9500"))
 
     //---------
 
-    await bridge1.setTokenOwner(bridge2.address)
+
+    const eventFilter = bridge1.filters.SwapInitialized();
+    const events = await bridge1.queryFilter(eventFilter, "latest");
+
+    let signature = await acc1.signMessage(ethers.utils.arrayify(events[0].args["hash"]))
 
     let sig = await ethers.utils.splitSignature(signature)
 
-    tx = await bridge2.redeem(acc1.address, acc1.address, amount, chainTo, hash, sig.v, sig.r, sig.s)
+    tx = await bridge2.redeem(events[0].args["from"], events[0].args["to"], 
+      events[0].args["amount"], events[0].args["chainTo"], events[0].args["hash"], sig.v, sig.r, sig.s)
     await tx.wait()
 
      expect(await token.balanceOf(acc1.address)).to.equal(parseEther("10000"))

@@ -2,8 +2,12 @@
 pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract Erc20Token {
+contract Erc20Token is AccessControl{
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
+    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
 
     address private owner;
 
@@ -32,6 +36,10 @@ contract Erc20Token {
         tokenName = _name;
         tokenSymbol = _symbol;
         balances[msg.sender] = totalAmount;
+  
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(MINTER_ROLE, msg.sender);
+        _grantRole(BURNER_ROLE, msg.sender);
     }
 
     function name() public view returns (string memory) {
@@ -56,10 +64,6 @@ contract Erc20Token {
 
      function allowance(address _owner, address _spender) public view returns (uint256) {
         return allowed[_owner][_spender];
-    }
-
-    function setOwner(address _address) onlyOwner public {
-        owner = _address;
     }
 
     function transfer(address _to, uint256 _amount) public returns (bool) {
@@ -102,17 +106,26 @@ contract Erc20Token {
         return true;
     }
 
-    function mint(address _account, uint256 _amount) onlyOwner public  {
+    function mint(address _account, uint256 _amount) onlyRole(MINTER_ROLE)  public  {
         totalAmount += _amount;
         balances[_account] += _amount;
         emit Transfer(address(0), _account, _amount);
     }
-
-     function burn(address _account, uint256 _amount) onlyOwner public  {
+   
+    function burn(address _account, uint256 _amount) onlyRole(BURNER_ROLE)  public  {
         require(_amount <= balances[_account], "Not possible to burn more than exising amount");
         balances[_account] -= _amount;
         totalAmount -= _amount;
         emit Transfer(_account, address(0), _amount);
     }
+
+    function setMiner(address _addr) onlyOwner public  {
+        _grantRole(MINTER_ROLE, _addr);
+    }
+
+     function setBurner(address _addr) onlyOwner public {
+        _grantRole(BURNER_ROLE, _addr);
+    }
+
 
 }
