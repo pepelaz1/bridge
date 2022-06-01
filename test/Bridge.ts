@@ -72,7 +72,7 @@ describe("Bridge", function () {
     let sig = await ethers.utils.splitSignature(signature)
 
     tx = await bridge2.redeem(events[0].args["from"], events[0].args["to"], 
-      events[0].args["amount"], events[0].args["chainTo"], events[0].args["hash"], sig.v, sig.r, sig.s)
+      events[0].args["amount"], events[0].args["chainTo"], events[0].args["nonce"], sig.v, sig.r, sig.s)
     await tx.wait()
 
     expect(await token.balanceOf(acc1.address)).to.equal(parseEther("10000"))

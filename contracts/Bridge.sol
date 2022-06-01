@@ -33,9 +33,9 @@ contract Bridge {
         emit SwapInitialized(msg.sender, _to, _amount, _nonce, _chainTo, hash);
     }
 
-    function redeem(address _from, address _to, uint256 _amount, uint256 _chainTo, bytes32 _hash, uint8 _v, bytes32 _r, bytes32 _s) public {
+    function redeem(address _from, address _to, uint256 _amount, uint256 _chainTo, uint256 _nonce, uint8 _v, bytes32 _r, bytes32 _s) public {
         require(_chainTo == block.chainid, 'wrong chainId');
-        bytes32 hash = hashMessage(_hash);     
+        bytes32 hash = hashMessage(keccak256(abi.encodePacked(_from, _to, _amount, _nonce, _chainTo)));          
         require(ecrecover(hash, _v, _r, _s)  == _from , 'wrong signature');
         require(processedHashes[_from][hash] == false, 'already processed');
         processedHashes[_from][hash] = true;
