@@ -43,7 +43,7 @@ contract Bridge {
     }
 
     function hashMessage(bytes32 _message) private pure returns(bytes32) {
-        return keccak256(abi.encodePacked("\x19Ethereum Signed Message 1:\n32", _message));
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _message));
     }
  
 }

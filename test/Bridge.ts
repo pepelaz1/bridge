@@ -75,6 +75,6 @@ describe("Bridge", function () {
       events[0].args["amount"], events[0].args["chainTo"], events[0].args["hash"], sig.v, sig.r, sig.s)
     await tx.wait()
 
-     expect(await token.balanceOf(acc1.address)).to.equal(parseEther("10000"))
+    expect(await token.balanceOf(acc1.address)).to.equal(parseEther("10000"))
  })
 });
