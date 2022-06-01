@@ -57,7 +57,6 @@ contract Bridge {
     }
 
     function getHash(address _from, address _to, uint256 _amount, uint256 _nonce, uint256 _chainTo, address _target) private pure returns(bytes32) {
-        //return keccak256(abi.encodePacked(_from, _to, _amount, _nonce, _chainTo));
         bytes32 bridgeHash = keccak256(
             abi.encode(bridgeStruct, _from, _to, _nonce,_amount, _nonce, _chainTo, _target)
         );
