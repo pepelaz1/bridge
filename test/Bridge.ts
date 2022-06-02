@@ -61,9 +61,6 @@ describe("Bridge", function () {
 
     expect(await token.balanceOf(acc1.address)).to.equal(parseEther("9500"))
 
-    //---------
-
-
     const eventFilter = bridge1.filters.BridgeOperation();
     const events = await bridge1.queryFilter(eventFilter, "latest");
 
@@ -74,5 +71,29 @@ describe("Bridge", function () {
     await tx.wait()
 
     expect(await token.balanceOf(acc1.address)).to.equal(parseEther("10000"))
- })
+  })
+
+
+  it("can't redeem twice", async function(){
+    const nonce = 1
+    const amount = parseEther('500')
+    const chainTo = 1337
+    
+    let tx = await bridge1.swap(acc1.address, amount, nonce, chainTo, bridge2.address)
+    await tx.wait()
+
+    const eventFilter = bridge1.filters.BridgeOperation();
+    const events = await bridge1.queryFilter(eventFilter, "latest");
+
+    let signature = await acc1.signMessage(ethers.utils.arrayify(events[0].args["hash"]))
+
+    tx = await bridge2.redeem(events[0].args["from"], events[0].args["to"], 
+      events[0].args["amount"], events[0].args["chainTo"], events[0].args["target"], events[0].args["nonce"], signature)
+    await tx.wait()
+
+    await expect(
+       bridge2.redeem(events[0].args["from"], events[0].args["to"], events[0].args["amount"], events[0].args["chainTo"], events[0].args["target"], events[0].args["nonce"], signature)
+    ).to.be.revertedWith("already processed");
+
+  })
 });
