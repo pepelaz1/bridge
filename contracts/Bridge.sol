@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 contract Bridge {
     using ECDSA for bytes32;
 
-    bytes32 private constant DOMAIN = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
+    bytes32 private constant DOMAIN = keccak256("EIP712Domain(string name,string version,uint256 chainId)");
 
     bytes32 private constant BRIDGE = keccak256("Bridge(address from,address to,uint256 nonce,uint256 amount,uint256 chainTo,address target)");
 
@@ -48,17 +48,16 @@ contract Bridge {
         require(processedHashes[_from][hash] == false, 'already processed');
         processedHashes[_from][hash] = true;
         token.mint(_to, _amount);
-        emit BridgeOperation(msg.sender, _to, _amount, _nonce, _chainTo, _target, hash, Operation.Redeem);
+        emit BridgeOperation(_from, _to, _amount, _nonce, _chainTo, _target, hash, Operation.Redeem);
     }
 
-    function verify(bytes32 _data, bytes calldata _signature, address _address) private pure returns (bool) {
+    function verify(bytes32 _data, bytes calldata _signature, address _address) private  returns (bool) {
         return _data.toEthSignedMessageHash().recover(_signature) == _address;
     }
 
     function getHash(address _from, address _to, uint256 _amount, uint256 _nonce, uint256 _chainTo, address _target) private view returns(bytes32) {
-
         bytes32 domainHash = keccak256(
-            abi.encode(DOMAIN, keccak256(bytes("Bridge")), keccak256(bytes("1")), block.chainid, _target)
+            abi.encode(DOMAIN, keccak256(bytes("Bridge")), keccak256(bytes("1")), 1)
         );
 
         bytes32 bridgeHash = keccak256(

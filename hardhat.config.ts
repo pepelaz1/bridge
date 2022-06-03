@@ -1,12 +1,17 @@
 import * as dotenv from "dotenv";
 
-import { HardhatUserConfig, task } from "hardhat/config";
 
+import { HardhatUserConfig, task } from "hardhat/config";
+import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
+
+import { ethers } from "hardhat";
+
+//const { parseEther } = ethers.utils;
 
 require("./tasks/tasks");
 
@@ -22,6 +27,11 @@ const config: HardhatUserConfig = {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
       accounts:  process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
     },
+    bsctest: {
+      url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+      chainId: 97,
+      accounts:  process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
     hardhat: {
       chainId: 1337
     }
@@ -33,7 +43,8 @@ const config: HardhatUserConfig = {
     currency: "USD",
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    //apiKey: process.env.ETHERSCAN_KEY,
+     apiKey: process.env.BSCSCAN_KEY
   },
 };
 

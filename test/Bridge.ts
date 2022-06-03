@@ -91,6 +91,7 @@ describe("Bridge", function () {
       events[0].args["amount"], events[0].args["chainTo"], events[0].args["target"], events[0].args["nonce"], signature)
     await tx.wait()
 
+
     await expect(
        bridge2.redeem(events[0].args["from"], events[0].args["to"], events[0].args["amount"], events[0].args["chainTo"], events[0].args["target"], events[0].args["nonce"], signature)
     ).to.be.revertedWith("already processed");
